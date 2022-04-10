@@ -103,6 +103,7 @@ func state_air(dt):
 		and velocity.y < jump_speed * min_cancelable_jump_scalar
 	):
 		jump_ended = true
+		# TODO: change how this works. interpolation or curve?
 		velocity.y = velocity.y * 0.6
 		print("jump cancelled!")
 	
