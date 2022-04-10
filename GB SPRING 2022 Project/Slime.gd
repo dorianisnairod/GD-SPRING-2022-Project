@@ -30,6 +30,8 @@ var velocity = Vector2(0, 0)
 var jump_pressed = false
 var jump_ended = false
 var move_direction = 0
+var x_stretch = 1
+var y_stretch = 1
 
 
 # Called when the node enters the scene tree for the first time.
@@ -52,6 +54,9 @@ func state_ground(dt):
 		velocity = player_jump(velocity)
 		state = State.AIR
 		return
+		
+	x_stretch = lerp(x_stretch, 1, 0.08)
+	y_stretch = lerp(y_stretch, 1, 0.08)
 	
 	velocity = horizontal_move(
 		velocity, 
@@ -93,9 +98,12 @@ func state_air(dt):
 	if is_on_floor():
 		state = State.GROUND
 		velocity.y = 0
+		on_land()
 		return
 	# euler integration (good enough :sunglasses:)
 	velocity.y += gravity * dt
+	x_stretch = lerp(x_stretch, 1, 0.12)
+	y_stretch = lerp(y_stretch, 1, 0.12)
 	
 	if (
 		jump_ended == false
@@ -120,7 +128,15 @@ func state_air(dt):
 func player_jump(current_velocity):
 	jump_buffer_count = 0
 	jump_ended = false
+	x_stretch = 0.7
+	y_stretch = 1.5
 	return Vector2(current_velocity.x, -jump_speed)
+
+
+func on_land():
+	if jump_buffer_count == 0:
+		x_stretch = 1.3
+		y_stretch = 0.8
 
 
 func _physics_process(delta):
@@ -132,7 +148,11 @@ func _physics_process(delta):
 		state_ground(delta)
 	elif state == State.AIR:
 		state_air(delta)
-		
+	
+	get_node("Sprite").scale = Vector2(0.17 * x_stretch, 0.17 * y_stretch)
+	#var sprite_height = get_node("Sprite").texture.get_height()
+	#get_node("Sprite").offset = Vector2(0, 0.5*sprite_height * (1-y_stretch))
+	
 	move_and_slide(velocity * delta * 1000, Vector2.UP, true)
 	jump_buffer_count = max(jump_buffer_count - 1, 0)
 
