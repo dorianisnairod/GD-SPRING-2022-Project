@@ -19,13 +19,16 @@ export var ground_friction = 8000
 export var air_deceleration = 10000
 export var air_acceleration = 5000
 export var air_friction = 8000
+export var min_cancelable_jump_scalar = 0.1
 
-const JUMP_BUFFER_FRAMES = 10
+const JUMP_BUFFER_FRAMES = 12
 const VELOCITY_EPSILON = 0.1
+
 var jump_buffer_count = 0
 
 var velocity = Vector2(0, 0)
 var jump_pressed = false
+var jump_ended = false
 var move_direction = 0
 
 
@@ -40,6 +43,7 @@ func _input(event):
 
 
 func state_ground(dt):
+	jump_ended = true
 	if not is_on_floor():
 		state = State.AIR
 		return
@@ -76,10 +80,11 @@ func horizontal_move(
 	elif direction != 0: # if moving...
 		# apply speed-up acceleration
 		current_velocity.x += direction * acceleration * dt
+		current_velocity.x = clamp(current_velocity.x, -walk_speed, walk_speed)
 	else:
 		# apply friction
 		current_velocity.x = move_toward(
-			current_velocity.x, 0, direction * friction_deceleration * dt
+			current_velocity.x, 0, friction_deceleration * dt
 		)
 	return current_velocity
 
@@ -91,6 +96,15 @@ func state_air(dt):
 		return
 	# euler integration (good enough :sunglasses:)
 	velocity.y += gravity * dt
+	
+	if (
+		jump_ended == false
+		and not Input.is_action_pressed("jump")
+		and velocity.y < jump_speed * min_cancelable_jump_scalar
+	):
+		jump_ended = true
+		velocity.y = velocity.y * 0.6
+		print("jump cancelled!")
 	
 	velocity = horizontal_move(
 		velocity, 
@@ -104,6 +118,7 @@ func state_air(dt):
 
 func player_jump(current_velocity):
 	jump_buffer_count = 0
+	jump_ended = false
 	return Vector2(current_velocity.x, -jump_speed)
 
 
@@ -117,6 +132,6 @@ func _physics_process(delta):
 	elif state == State.AIR:
 		state_air(delta)
 		
-	move_and_slide(velocity * delta, Vector2.UP, true)
+	move_and_slide(velocity * delta * 1000, Vector2.UP, true)
 	jump_buffer_count = max(jump_buffer_count - 1, 0)
 

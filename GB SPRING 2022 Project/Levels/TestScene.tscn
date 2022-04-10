@@ -3,7 +3,7 @@
 [ext_resource path="res://Scenes/Slime.tscn" type="PackedScene" id=1]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 91, 11.5 )
+extents = Vector2( 187, 11.5 )
 
 [node name="Scene" type="Node2D"]
 
@@ -23,5 +23,12 @@ zoom = Vector2( 0.5, 0.5 )
 
 [node name="Slime" parent="." instance=ExtResource( 1 )]
 position = Vector2( 0, -35 )
-gravity = 20000
-jump_speed = 9000
+gravity = 40
+jump_speed = 15
+walk_speed = 10
+ground_deceleration = 70
+ground_acceleration = 40
+ground_friction = 30
+air_deceleration = 50
+air_acceleration = 30
+air_friction = 8

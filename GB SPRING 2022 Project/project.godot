@@ -14,9 +14,14 @@ config/name="GB SPRING 2022 Project"
 run/main_scene="res://Levels/TestScene.tscn"
 config/icon="res://icon.png"
 
+[display]
+
+window/vsync/vsync_via_compositor=true
+
 [global]
 
 unit=false
+vsync=false
 
 [input]
 
